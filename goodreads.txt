@@ -1,0 +1,4 @@
+goodreads
+
+key: GUlqkpreN4ptYlQfhKt6A
+secret: tLaf3njAYCc9KSOzUw1sQFzK0aaEbf5KjnocpGRIHo
