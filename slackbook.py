@@ -44,8 +44,10 @@ class SlackBook:
             response = self.handle_author_message(message)
 
         elif 'is_selection' in self.context.keys() and self.context['is_selection']:
-            response = "Invalid entry. Press any key to see your choices again"
             
+            self.context['selection_valid'] = False
+            response = "Invalid entry. Press any key to see your choices again..."
+
             if self.context['selection'].isdigit():
                 selection = int(self.context['selection'])
                 if selection >= 1 and selection <= 20:
