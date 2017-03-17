@@ -32,7 +32,7 @@ class SlackBook:
         selected_book = self.context['books'][selection-1]
 
         # book_id = self.context['books'][selection-1]['book_id']
-        book_description = self.book_client.get_book_info_by_id(book_id)
+        book_description = self.book_client.get_book_info_by_id(selected_book['book_id'])
         # book_rating = self.context['books'][selection-1]['average_rating']
 
         return self.format_book_info(selected_book, book_description)
@@ -44,25 +44,28 @@ class SlackBook:
         If the message is valid, the bot will act on the message.  If it is not,
         the bot will respond make, asking the user to rephrase their request.
         """
+        print(message)
         watson_response = self.watson_conversation.message(
             workspace_id = self.workspace_id,
             message_input = {"text": message},
             context = self.context)
-
+        
+        print(watson_response["context"])
         self.context = watson_response["context"]
 
         if 'is_author' in self.context.keys() and self.context['is_author']:
             response = self.handle_author_message(message)
+            
 
         elif 'is_selection' in self.context.keys() and self.context['is_selection']:
-            
+
             self.context['selection_valid'] = False
             response = "Invalid entry. Press any key to see your choices again..."
 
             if self.context['selection'].isdigit():
                 selection = int(self.context['selection'])
                 if selection >= 1 and selection <= 20:
-                    self.context['seletion_valid'] = True
+                    self.context['selection_valid'] = True
                     response = self.handle_selection_message(selection)
 
         elif watson_response['entities'] and watson_response['entities'][0]['entity'] == 'genre':

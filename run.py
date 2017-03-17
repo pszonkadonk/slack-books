@@ -9,6 +9,7 @@ from slackbook import SlackBook
 
 if __name__ == "__main__":
   load_dotenv(os.path.join(os.path.dirname(__file__), ".env"))
+  
 
   bot_id = os.environ.get("BOT_ID")
 
@@ -17,7 +18,7 @@ if __name__ == "__main__":
   conversation_agent = ConversationV1(
     username=os.environ.get("CONVERSATION_USERNAME"),
     password=os.environ.get("CONVERSATION_PASSWORD"),
-    version= "2017-02-03"
+    version= "2017-02-03" 
     )
 
   book_client = BookClient(os.environ.get("GOODREADS_API"))
