@@ -4,12 +4,16 @@ from book import BookClient
 
 my_client = BookClient('GUlqkpreN4ptYlQfhKt6A')
 
-foo = my_client.find_by_author('John Steinbeck')
-context = {}
-context['books'] = foo
+# foo = my_client.find_by_author('John Steinbeck')
+# context = {}
+# context['books'] = foo
 
-for i, book in enumerate(context['books']):
-    print(str(i+1) + ". " + book['book_title'])
+# for i, book in enumerate(context['books']):
+#     print(str(i+1) + ". " + book['book_title'])
+
+
+
+my_client.get_book_info_by_id(50)
 
 
 # api_key = 'GUlqkpreN4ptYlQfhKt6A'

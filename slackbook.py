@@ -5,9 +5,8 @@ from book import BookClient
 
 class SlackBook:
     def __init__(self, bot_id, slack_client, watson_conversation, book_client):
-
         self.bot_id = bot_id
-        self.slack_cleint = slack_client
+        self.slack_client = slack_client
         self.watson_conversation = watson_conversation
         self.book_client = book_client
         self.delay = 1
@@ -15,16 +14,28 @@ class SlackBook:
 
         self.bot_directed = "<@" + bot_id + ">"
 
-    def format_book_info(self, book_description, book_rating):
+        self.context = {}
 
-        #do things
+    def format_book_info(self, selected_book, book_description):
+        response = "Here is some information on that book \n" +\
+            "Title: " + selected_book['book_title'] + "\n" +\
+            "Author: " + selected_book['author_name'] + "\n" +\
+            "Description" + "\n" + \
+            book_description + "\n" + \
+            selected_book['average_rating'] + "\n" +\
+            "Review Count: " + selected_book['review_count'] + "\n"
+
+        return response
+
 
     def handle_selection_message(self, selection):
-        book_id = self.context['books'][selection-1]['book_id']
-        book_description = self.book_client.get_book_info_by_id(book_id)
-        book_rating = self.context['books'][selection-1]['average_rating']
+        selected_book = self.context['books'][selection-1]
 
-        return self.format_book_info(book_description, book_rating)
+        # book_id = self.context['books'][selection-1]['book_id']
+        book_description = self.book_client.get_book_info_by_id(book_id)
+        # book_rating = self.context['books'][selection-1]['average_rating']
+
+        return self.format_book_info(selected_book, book_description)
 
 
     def handle_message(self, message, channel):
@@ -34,8 +45,8 @@ class SlackBook:
         the bot will respond make, asking the user to rephrase their request.
         """
         watson_response = self.watson_conversation.message(
-            workspace_id = self.workspace_id
-            message_input = {"text": message}
+            workspace_id = self.workspace_id,
+            message_input = {"text": message},
             context = self.context)
 
         self.context = watson_response["context"]
@@ -89,8 +100,8 @@ class SlackBook:
         output = slack_rtm_output
         if output and len(output) > 0:
             for message in output:
-                if message and 'text' in message and BOT_DIRECTED in message['text']:
-                    return message['text'].split(BOT_DIRECTED)[1].strip().lower(), \
+                if message and 'text' in message and self.bot_directed in message['text']:
+                    return message['text'].split(self.bot_directed)[1].strip().lower(), \
                         message['channel']
         return None, None
     
@@ -101,12 +112,12 @@ class SlackBook:
 
     def run(self):
         DELAY = 1
-        if slack_client.rtm_connect():
+        if self.slack_client.rtm_connect():
             print("slack-books-bot connected...")
             while True:
                 command, channel = self.parse_output(self.slack_client.rtm_read())
                 if(command and channel):
-                    handle_message(command, channel)
+                    self.handle_message(command, channel)
                 time.sleep(DELAY)
         else:
             print("Could not connect to slack.  Please check slack api token or bot id")

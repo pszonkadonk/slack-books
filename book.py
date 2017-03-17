@@ -59,6 +59,13 @@ class BookClient:
         return work_list
     
     def get_book_info_by_id(self, book_id):
+        url = self.endpoint+'/book/show/'+str(book_id)+'.xml?'
+        params = {
+            "key": self.api_key
+        }
+        result = requests.get(url, params=params)
+        root = ElementTree.fromstring(result.content)
 
+        book_description = root[1][16].text
 
-        # do things
+        return book_description

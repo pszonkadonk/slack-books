@@ -1,0 +1,9 @@
+click
+ordereddict
+pysolr
+python-dotenv
+requests
+six
+slackclient
+watson-developer-cloud
+websocket-client
