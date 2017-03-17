@@ -41,12 +41,12 @@ class BookClient:
         work_list = []
         for work in xmlResult.iter('work'):
             work_dict = {}
-            work_dict['book_id'] = work[0].text
             work_dict['review_count'] = work[3].text
             work_dict['publication_year'] = work[4].text
             work_dict['average_rating'] = work[7].text
 
             best_book = work[8]
+            work_dict['book_id'] = best_book[0].text
             work_dict['book_title'] = best_book[1].text
             
             author = best_book[2]
@@ -59,14 +59,19 @@ class BookClient:
         return work_list
     
     def get_book_info_by_id(self, book_id):
-        url = self.endpoint+'book/show/'+str(book_id)+'.xml?'
+        url = self.endpoint+'/book/show/'+str(book_id)+'.xml?'
+        print("BOOKID " + book_id)
+        print(type(book_id))
+
         params = {
             "key": self.api_key
         }
-        result = requests.get(url, params=params)
-        print("RESULT URL " + result.url)
-        root = ElementTree.fromstring(result.content)
+        results = requests.get(url, params=params)
+        print("RESULT URL " + results.url)
+        root = ElementTree.fromstring(results.content)
 
         book_description = root[1][16].text
+
+        print(book_description)
 
         return book_description

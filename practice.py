@@ -13,7 +13,9 @@ my_client = BookClient('GUlqkpreN4ptYlQfhKt6A')
 
 
 
-my_client.get_book_info_by_id(50)
+my_client.get_book_info_by_id('4406')
+
+
 
 
 # api_key = 'GUlqkpreN4ptYlQfhKt6A'
