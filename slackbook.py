@@ -22,18 +22,16 @@ class SlackBook:
             "Author: " + selected_book['author_name'] + "\n" +\
             "Description" + "\n" + \
             book_description + "\n" + \
-            selected_book['average_rating'] + "\n" +\
-            "Review Count: " + selected_book['review_count'] + "\n"
+            'Average Rating: ' + selected_book['average_rating'] + "\n" +\
+            "Review Count: " + selected_book['review_count'] + "\n" + \
+            "Would you like to revisit the list?"
 
         return response
 
 
     def handle_selection_message(self, selection):
         selected_book = self.context['books'][selection-1]
-
-        # book_id = self.context['books'][selection-1]['book_id']
         book_description = self.book_client.get_book_info_by_id(selected_book['book_id'])
-        # book_rating = self.context['books'][selection-1]['average_rating']
 
         return self.format_book_info(selected_book, book_description)
 
@@ -54,6 +52,8 @@ class SlackBook:
         self.context = watson_response["context"]
 
         if 'is_author' in self.context.keys() and self.context['is_author']:
+            if 'books' in self.context: 
+                message = self.context['books'][0]['author_name']
             response = self.handle_author_message(message)
             
 
