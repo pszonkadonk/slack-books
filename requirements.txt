@@ -7,3 +7,4 @@ six
 slackclient
 watson-developer-cloud
 websocket-client
+beautifulsoup4

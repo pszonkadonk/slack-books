@@ -1,6 +1,7 @@
 import requests
 from xml.etree import ElementTree
 import os
+from bs4 import BeautifulSoup
 
 
 class BookClient:
@@ -31,7 +32,6 @@ class BookClient:
 
         params = {
             "key": self.api_key,
-            "q": genre
         }
 
         return requests.get(self.endpoint, params=params)
@@ -57,6 +57,16 @@ class BookClient:
             work_list.append(work_dict)
         
         return work_list
+
+    def get_book_by_id(self, book_id):
+        url = self.endpoint+'/book/show/'+str(book_id)+'.xml?'
+        params = {
+            "key": self.api_key
+        }
+
+        results = requests.get(url, params=params)
+
+
     
     def get_book_info_by_id(self, book_id):
         url = self.endpoint+'/book/show/'+str(book_id)+'.xml?'

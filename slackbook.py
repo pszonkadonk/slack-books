@@ -48,7 +48,8 @@ class SlackBook:
             message_input = {"text": message},
             context = self.context)
         
-        print(watson_response["context"])
+        # print(watson_response["context"])
+        print(watson_response['entities'])
         self.context = watson_response["context"]
 
         if 'is_author' in self.context.keys() and self.context['is_author']:
@@ -70,6 +71,7 @@ class SlackBook:
         
         elif 'selection' in self.context.keys() and self.context['selection'] == None:
             response = "Ok then, let me know if there is anything else you need." 
+            
 
         elif watson_response['entities'] and watson_response['entities'][0]['entity'] == 'genre':
             genre = watson_response['entities'][0]['value']
@@ -95,6 +97,19 @@ class SlackBook:
         response+= "Please enter the number of the book you would like to know more about"
 
         return response
+
+    def handle_genre_message(self, message):
+        if self.context['get_genre']:
+            self.context['books'] = self.book_client.find_by_genre
+
+        response = "The following are recent books from the " + "message "+ genre "+: \n"
+
+        for(i, book) in enumerate(self.context['books']):
+            response += str(i+1) + ". " + book['book_title'] + "\n"
+        response+= "Please enter the number of the book you would like to know more about"
+
+ 
+ 
 
 
     def parse_output(self, slack_rtm_output):
