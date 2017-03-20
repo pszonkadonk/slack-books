@@ -67,6 +67,9 @@ class SlackBook:
                 if selection >= 1 and selection <= 20:
                     self.context['selection_valid'] = True
                     response = self.handle_selection_message(selection)
+        
+        elif 'selection' in self.context.keys() and self.context['selection'] == None:
+            response = "Ok then, let me know if there is anything else you need." 
 
         elif watson_response['entities'] and watson_response['entities'][0]['entity'] == 'genre':
             genre = watson_response['entities'][0]['value']
