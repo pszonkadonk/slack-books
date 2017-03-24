@@ -102,7 +102,7 @@ class SlackBook:
         if self.context['get_genre']:
             self.context['books'] = self.book_client.find_by_genre
 
-        response = "The following are recent books from the " + "message "+ genre "+: \n"
+        response = "The following are recent books from the " + "message "+ genre + ": \n"
 
         for(i, book) in enumerate(self.context['books']):
             response += str(i+1) + ". " + book['book_title'] + "\n"

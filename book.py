@@ -30,14 +30,51 @@ class BookClient:
 
     def find_by_genre(self, genre):
 
-        params = {
-            "key": self.api_key,
-        }
+        book_list_ids = []
+        book_list =[]
+        r = requests.get(self.endpoint+"genres/"+genre)
+        soup = BeautifulSoup(r.content, 'html.parser')
 
-        return requests.get(self.endpoint, params=params)
+        for book in soup.find_all('div', class_='coverWrapper'):
+            book_id = book.get('id').split('_')[1]
+            book_list_ids.append(book_id)
+
+        book_list_ids = book_list_ids[0:15]   # limit selection to 15 book
+
+        for id in book_list_ids:
+            book_xml = self.get_book_by_id(id)
+            self.get_work(book_xml)
+            book_list.append(self.get_work(book_xml))
+            
+
+        return book_list
+        
+
+    def get_work(self, bookXmlResult):
+        book_dict = {}
+        book_work = bookXmlResult[1][17]
+        book_author = bookXmlResult[1][26]
+        
+        book_dict['book_title'] = bookXmlResult[1][1].text
+        book_dict['book_id'] = book_work[2].text
+        book_dict['review_count'] = book_work[3].text
+        book_dict['publication_year'] = book_work[7].text
+
+
+        book_dict['author_id'] = book_author[0][0].text
+        book_dict['author_name'] = book_author[0][1].text
+
+
+        book_dict['average_rating'] = bookXmlResult[1][18].text
+
+        return book_dict
+
+    
+
 
 
     def get_array_of_works(self, xmlResult):
+
         work_list = []
         for work in xmlResult.iter('work'):
             work_dict = {}
@@ -59,16 +96,25 @@ class BookClient:
         return work_list
 
     def get_book_by_id(self, book_id):
+
+        book_dict = {}
         url = self.endpoint+'/book/show/'+str(book_id)+'.xml?'
         params = {
             "key": self.api_key
         }
 
         results = requests.get(url, params=params)
+        root = ElementTree.fromstring(results.content)
+
+        # book_dict['book_title'] = root[1][1].text
+        # book_dict['description'] = root[1][16].text
+
+        return root
 
 
     
     def get_book_info_by_id(self, book_id):
+
         url = self.endpoint+'/book/show/'+str(book_id)+'.xml?'
 
         params = {
