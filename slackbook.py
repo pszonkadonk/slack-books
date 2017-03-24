@@ -108,6 +108,8 @@ class SlackBook:
             response += str(i+1) + ". " + book['book_title'] + "\n"
         response+= "Please enter the number of the book you would like to know more about"
 
+        return response
+
  
  
 
