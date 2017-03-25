@@ -11,6 +11,11 @@ class BookClient:
 
 
     def find_by_author(self, author):
+        """
+        Make call to Goodreads to search for books
+        by a particular author.  Parses the XML
+        response and returns list of books
+        """
 
         url = self.endpoint+'/search/index.xml?'
 
@@ -29,6 +34,14 @@ class BookClient:
 
 
     def find_by_genre(self, genre):
+        """
+        Make call to Goodreads to search for books
+        by a particular author.  Goodreads has no api call
+        to search by genre, thus BeautifulSoup is used to 
+        scrape book id's and then calls get_work to call Goodreads
+        API to search by book and parse XML.  Limits to 15 books to 
+        save time and resources
+        """
 
         book_list_ids = []
         book_list =[]
@@ -51,6 +64,12 @@ class BookClient:
         
 
     def get_work(self, bookXmlResult):
+        """
+        Parse XML response for a book and return the 
+        title, id, review_count, publication_year, author_id
+        author_name, and average_rating.  Returns dictionary
+        for individual book
+        """
         book_dict = {}
         book_work = bookXmlResult[1][17]
         book_author = bookXmlResult[1][26]
@@ -69,12 +88,13 @@ class BookClient:
 
         return book_dict
 
-    
-
-
 
     def get_array_of_works(self, xmlResult):
-
+        """
+        Called after author search API call is made.
+        Parses XML response and returns each book (work)
+        from an author
+        """
         work_list = []
         for work in xmlResult.iter('work'):
             work_dict = {}
@@ -96,7 +116,11 @@ class BookClient:
         return work_list
 
     def get_book_by_id(self, book_id):
-
+        """
+        Makes call to Goodreads API to search
+        for a particular book by its id.  Returns
+        XML response 
+        """        
         book_dict = {}
         url = self.endpoint+'/book/show/'+str(book_id)+'.xml?'
         params = {
@@ -106,15 +130,17 @@ class BookClient:
         results = requests.get(url, params=params)
         root = ElementTree.fromstring(results.content)
 
-        # book_dict['book_title'] = root[1][1].text
-        # book_dict['description'] = root[1][16].text
-
         return root
 
 
     
     def get_book_info_by_id(self, book_id):
 
+        """
+        Makes call to Goodreads API to search
+        for a particular book by its id.  Returns
+        only the description for a book 
+        """   
         url = self.endpoint+'/book/show/'+str(book_id)+'.xml?'
 
         params = {

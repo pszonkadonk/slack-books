@@ -17,6 +17,10 @@ class SlackBook:
         self.context = {}
 
     def format_book_info(self, selected_book, book_description):
+        """ 
+        Formatting book information that is sent to the user after
+        a selection is made
+        """
         response = "Here is some information on that book \n" +\
             "Title: " + selected_book['book_title'] + "\n" +\
             "Author: " + selected_book['author_name'] + "\n" +\
@@ -30,6 +34,11 @@ class SlackBook:
 
 
     def handle_selection_message(self, selection):
+        """
+        Select and calls get_book_info_by_id to get the book description
+        that the user chose in the selection menu.  Calls format_book_info 
+        for formatting
+        """
         selected_book = self.context['books'][selection-1]
         book_description = self.book_client.get_book_info_by_id(selected_book['book_id'])
 
@@ -52,12 +61,27 @@ class SlackBook:
         print(watson_response['entities'])
         self.context = watson_response["context"]
 
+        print(watson_response['context'])
+
+
+        #if author has chosen author,  get books.  If user is revisiting the list
+        # for a different book by the same author, simply pull the book list from context
+        
         if 'is_author' in self.context.keys() and self.context['is_author']:
             if 'books' in self.context: 
                 message = self.context['books'][0]['author_name']
             response = self.handle_author_message(message)
-            
 
+        # if user has already chosen a genre previosuly, this grabs the books 
+        # from context so that the user can revisit the list of books in genre
+
+        if 'genre' in self.context.keys() and self.context['selection'] == 'None':
+            if 'books' in self.context:  #check to see if book list is already in context
+                message = self.context['genre']
+            response = self.handle_genre_message(message)   # else get book list from goodreads
+
+        # if user has made a numeric selection from the list.  I.E chooses book "4"    
+            
         elif 'is_selection' in self.context.keys() and self.context['is_selection']:
 
             self.context['selection_valid'] = False
@@ -68,13 +92,17 @@ class SlackBook:
                 if selection >= 1 and selection <= 20:
                     self.context['selection_valid'] = True
                     response = self.handle_selection_message(selection)
+
+        #if user is satisfied, and makes no selection
         
         elif 'selection' in self.context.keys() and self.context['selection'] == None:
             response = "Ok then, let me know if there is anything else you need." 
-            
 
+        #triggered when the user triggers an entity(genre) to search for
+            
         elif watson_response['entities'] and watson_response['entities'][0]['entity'] == 'genre':
             genre = watson_response['entities'][0]['value']
+            self.context['genre'] = genre
             response = self.handle_genre_message(genre)
 
         else:
@@ -87,6 +115,11 @@ class SlackBook:
         
 
     def handle_author_message(self, message):
+        """
+        The user is looking for a particular author.  Makes a request to the book client,
+        to pull an array of books from Goodreads and send to the context object.  Sends the list
+        of books to the user
+        """
         if self.context['get_books']:
             self.context['books'] = self.book_client.find_by_author(message)
 
@@ -99,20 +132,21 @@ class SlackBook:
         return response
 
     def handle_genre_message(self, message):
-        if self.context['get_genre']:
-            self.context['books'] = self.book_client.find_by_genre
+        """
+        The user is looking for a particular genre.  Makes a request to the book client
+        to pull an array of books from Goodreads and send to context object.  Sends list of
+        books to the user
+        """
+        if self.context['get_genre'] and 'books' not in self.context.keys():
+            self.context['books'] = self.book_client.find_by_genre(message)
 
-        response = "The following are recent books from the " + "message "+ genre + ": \n"
+        response = "The following are some recent books released in the " + message + " genre that have great reviews! \n"
 
         for(i, book) in enumerate(self.context['books']):
             response += str(i+1) + ". " + book['book_title'] + "\n"
-        response+= "Please enter the number of the book you would like to know more about"
+        response+= "Enter the number of a book if you would like to know more about it"
 
         return response
-
- 
- 
-
 
     def parse_output(self, slack_rtm_output):
         """
@@ -129,6 +163,9 @@ class SlackBook:
         return None, None
     
     def respond_to_message(self, response, channel):
+        """
+        Sends message back to user
+        """
         self.slack_client.api_call("chat.postMessage", channel = channel,
                                 text = response, as_user = True)
 
