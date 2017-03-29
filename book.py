@@ -24,6 +24,8 @@ class BookClient:
             "q": author
         }
 
+
+
         results = requests.get(url, params=params)
         root = ElementTree.fromstring(results.content)
 

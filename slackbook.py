@@ -57,7 +57,6 @@ class SlackBook:
             message_input = {"text": message},
             context = self.context)
         
-        # print(watson_response["context"])
         print(watson_response['entities'])
         self.context = watson_response["context"]
 
@@ -68,14 +67,14 @@ class SlackBook:
         # for a different book by the same author, simply pull the book list from context
         
         if 'is_author' in self.context.keys() and self.context['is_author']:
-            if 'books' in self.context: 
+            if 'books' in self.context and len(self.context['books']) != 0: 
                 message = self.context['books'][0]['author_name']
             response = self.handle_author_message(message)
 
         # if user has already chosen a genre previosuly, this grabs the books 
         # from context so that the user can revisit the list of books in genre
 
-        if 'genre' in self.context.keys() and self.context['selection'] == 'None':
+        elif 'genre' in self.context.keys() and self.context['selection'] == 'None':
             if 'books' in self.context:  #check to see if book list is already in context
                 message = self.context['genre']
             response = self.handle_genre_message(message)   # else get book list from goodreads
@@ -137,7 +136,7 @@ class SlackBook:
         to pull an array of books from Goodreads and send to context object.  Sends list of
         books to the user
         """
-        if self.context['get_genre'] and 'books' not in self.context.keys():
+        if self.context['get_genre'] and 'books' not in self.context.keys() or len(self.context['books']) == 0:
             self.context['books'] = self.book_client.find_by_genre(message)
 
         response = "The following are some recent books released in the " + message + " genre that have great reviews! \n"
