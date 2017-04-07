@@ -24,8 +24,6 @@ class BookClient:
             "q": author
         }
 
-
-
         results = requests.get(url, params=params)
         root = ElementTree.fromstring(results.content)
 
@@ -63,7 +61,38 @@ class BookClient:
             
 
         return book_list
-        
+
+    def find_most_popular(self):
+        """
+        Make call to Goodreads to search for books
+        popular in the year 2017.  Goodreads has no api call
+        to search by popular books, thus BeautifulSoup is used to 
+        scrape book id's and then calls get_work to call Goodreads
+        API to search by book and parse XML.  Limits to 15 books to 
+        save time and resources
+        """
+        book_list_ids = []
+        book_list =[]
+        r = requests.get(self.endpoint+"book/popular_by_date/2017")
+        soup = BeautifulSoup(r.content, 'html.parser')
+
+        for book in soup.find_all('div', class_='u-anchorTarget'):
+            book_id = book.get('id')
+            book_list_ids.append(book_id)
+
+        book_list_ids = book_list_ids[0:15]   # limit selection to 15 book
+
+
+        for id in book_list_ids:
+            book_xml = self.get_book_by_id(id)
+            self.get_work(book_xml)
+            book_list.append(self.get_work(book_xml))
+            
+
+        return book_list
+
+
+
 
     def get_work(self, bookXmlResult):
         """

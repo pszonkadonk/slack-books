@@ -42,6 +42,7 @@ class SlackBook:
         that the user chose in the selection menu.  Calls format_book_info 
         for formatting
         """
+        print("handle_selection_message called")
         selected_book = self.context['books'][selection-1]
         book_description = self.book_client.get_book_info_by_id(selected_book['book_id'])
 
@@ -54,19 +55,18 @@ class SlackBook:
         If the message is valid, the bot will act on the message.  If it is not,
         the bot will respond make, asking the user to rephrase their request.
         """
+        target_person=""
         print(message)
-        message_context = self.watson_nlu.analyze(
-            text=message,
-            features = [self.features.Entities(), self.features.Keywords()]
-        )
+        if(message.isdigit() == False):
+            message_context = self.watson_nlu.analyze(
+                text=message,
+                features = [self.features.Entities(), self.features.Keywords()]
+            )
+            print(json.dumps(message_context, indent=2))
 
-        print(json.dumps(message_context, indent=2))
-
-        if len(message_context['entities']) != 0:
-            if message_context['entities'][0]['type'] == 'Person':
-                target_person =  message_context['entities'][0]['text']
-        
-            
+            if len(message_context['entities']) != 0:
+                if message_context['entities'][0]['type'] == 'Person':
+                    target_person =  message_context['entities'][0]['text']
         
         watson_response = self.watson_conversation.message(
             workspace_id = self.workspace_id,
@@ -95,6 +95,9 @@ class SlackBook:
                 message = self.context['genre']
             response = self.handle_genre_message(message)   # else get book list from goodreads
 
+        elif 'is_popular' in self.context.keys() and self.context['is_popular'] == 'None':
+            response = self.handle_random_best_sellers()
+
         # if user has made a numeric selection from the list.  I.E chooses book "4"    
             
         elif 'is_selection' in self.context.keys() and self.context['is_selection']:
@@ -112,6 +115,12 @@ class SlackBook:
         
         elif 'selection' in self.context.keys() and self.context['selection'] == None:
             response = "Ok then, let me know if there is anything else you need." 
+
+        # user wants a list of books but not sure what they want (lazy)
+
+        elif 'find_assorted_books' in self.context.keys() and self.context['find_assorted_books'] == True:
+            response = self.handle_random_best_sellers()
+
 
         #triggered when the user triggers an entity(genre) to search for
             
@@ -159,10 +168,32 @@ class SlackBook:
         response = "The following are some recent books released in the " + message + " genre that have great reviews! \n"
 
         for(i, book) in enumerate(self.context['books']):
-            response += str(i+1) + ". " + book['book_title'] + "\n"
+            response += str(i+1) + ". " + book['book_title'] + "by: " + book['author_name'] +"\n"
         response+= "Enter the number of a book if you would like to know more about it"
 
         return response
+
+    def handle_random_best_sellers(self):
+        """
+        The user is uncertain what type of book they want Makes a request to the book client
+        to pull an array of the most popular books from Goodreads and send to context object.  Sends list of
+        books to the user
+        """ 
+        if(self.context['is_popular'] and 'books' not in self.context.keys() or len(self.context['books']) == 0):
+            self.context['books'] = self.book_client.find_most_popular()
+            
+        print(self.context['books'])
+
+        response = "The following are popular books from 2017 that have great reviews! \n"
+
+        for(i, book) in enumerate(self.context['books']):
+            response+=str(i+1) + ". " + book['book_title'] + "by: " + book['author_name'] +"\n"
+        response+= "Enter the number of a book if you would like to know more about it"
+
+
+        return response
+
+
 
     def parse_output(self, slack_rtm_output):
         """
