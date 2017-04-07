@@ -1,13 +1,16 @@
 import os
+import json
 import time
 from slackclient import SlackClient
 from book import BookClient
 
 class SlackBook:
-    def __init__(self, bot_id, slack_client, watson_conversation, book_client):
+    def __init__(self, bot_id, slack_client, watson_conversation, watson_nlu, features, book_client):
         self.bot_id = bot_id
         self.slack_client = slack_client
         self.watson_conversation = watson_conversation
+        self.watson_nlu = watson_nlu
+        self.features = features
         self.book_client = book_client
         self.delay = 1
         self.workspace_id = 'c1a2722a-b334-4b16-a197-ec4e293d5fc9'
@@ -52,6 +55,19 @@ class SlackBook:
         the bot will respond make, asking the user to rephrase their request.
         """
         print(message)
+        message_context = self.watson_nlu.analyze(
+            text=message,
+            features = [self.features.Entities(), self.features.Keywords()]
+        )
+
+        print(json.dumps(message_context, indent=2))
+
+        if len(message_context['entities']) != 0:
+            if message_context['entities'][0]['type'] == 'Person':
+                target_person =  message_context['entities'][0]['text']
+        
+            
+        
         watson_response = self.watson_conversation.message(
             workspace_id = self.workspace_id,
             message_input = {"text": message},
@@ -68,8 +84,8 @@ class SlackBook:
         
         if 'is_author' in self.context.keys() and self.context['is_author']:
             if 'books' in self.context and len(self.context['books']) != 0: 
-                message = self.context['books'][0]['author_name']
-            response = self.handle_author_message(message)
+                target_person = self.context['books'][0]['author_name']
+            response = self.handle_author_message(target_person)
 
         # if user has already chosen a genre previosuly, this grabs the books 
         # from context so that the user can revisit the list of books in genre
@@ -119,6 +135,7 @@ class SlackBook:
         to pull an array of books from Goodreads and send to the context object.  Sends the list
         of books to the user
         """
+        # print("This is the author in handle_author_message" + message)
         if self.context['get_books']:
             self.context['books'] = self.book_client.find_by_author(message)
 
