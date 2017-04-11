@@ -2,7 +2,7 @@ import requests
 from xml.etree import ElementTree
 import os
 from bs4 import BeautifulSoup
-
+import re
 
 class BookClient:
     def __init__(self, goodreads_key):
@@ -96,7 +96,6 @@ class BookClient:
         Returns an list of authors that are similar to the author
         that the user provided 
         """
-        print("This is the value passed to find_similar_author" + author)
         author = author.replace("."," ")
         similar_author_list = []
         author_id = self.find_author_id(author)
@@ -109,7 +108,7 @@ class BookClient:
             similar_author_list.append(author_name)
         
         similar_author_list = similar_author_list[1:]  #remove original author
-        print(similar_author_list)
+
         return similar_author_list
 
 
@@ -130,6 +129,52 @@ class BookClient:
         author_id  = root[1].attrib['id']
 
         return author_id
+
+    def find_similar_books(self, book):
+        """
+        Returns an list of books that are similar to the book
+        that the user provided 
+        """
+        book = re.sub(r'[^\w\s]', ' ', book)
+        book = book.split(' ')
+        book = re.sub(r'--','-','-'.join(book))
+
+        similar_book_list = []
+        book_id = self.find_book_id(book)
+        url = self.endpoint + "book/similar/" + book_id + "-"+ book
+        results = requests.get(url)
+
+        soup = BeautifulSoup(results.content, "html.parser")
+
+        for book in soup.find_all('div', class_='u-anchorTarget'):
+            print(book)
+
+
+
+        return
+
+
+
+
+    def find_book_id(self, book):
+        """
+        Returns an list of books that are similar to the book
+        that the user provided 
+        """
+        params = {
+            "key": self.api_key,
+            "q": book
+        }
+
+        url = self.endpoint + "search/index.xml"
+        results = requests.get(url, params=params)
+
+        root = ElementTree.fromstring(results.content)
+        work = root[1][6]
+        book_id = work[0][0].text
+
+        return book_id
+
 
     
     def get_work(self, bookXmlResult):

@@ -6,7 +6,9 @@ my_client = BookClient('GUlqkpreN4ptYlQfhKt6A')
 
 # my_client.find_author_id("John Steinbeck")
 
-my_client.find_similar_author("George R.R. Martin")
+# my_client.find_similar_author("George R.R. Martin")
+
+my_client.find_similar_books("Thinking, Fast and Slow")
 
 
 # books = my_client.find_by_author('John Steinbeck')

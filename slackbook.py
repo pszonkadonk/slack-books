@@ -215,6 +215,13 @@ class SlackBook:
         return response
 
 
+    def handle_similar_books(self, message):
+        """
+        The user is expresses a desire to find an author similar to another author.  This function
+        makes a request to the book client to pull an array of authors similar to the author
+        provided by the user 
+        """
+        self.context['relevent_books'] = self.book_client.find_similar_books(message)
 
 
     def parse_output(self, slack_rtm_output):
