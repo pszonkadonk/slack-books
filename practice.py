@@ -2,7 +2,11 @@ from book import BookClient
 
 my_client = BookClient('GUlqkpreN4ptYlQfhKt6A')
 
-print(my_client.find_most_popular())
+# print(my_client.find_most_popular())
+
+# my_client.find_author_id("John Steinbeck")
+
+my_client.find_similar_author("George R.R. Martin")
 
 
 # books = my_client.find_by_author('John Steinbeck')

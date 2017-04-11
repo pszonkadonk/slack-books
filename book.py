@@ -91,9 +91,47 @@ class BookClient:
 
         return book_list
 
+    def find_similar_author(self, author):
+        """
+        Returns an list of authors that are similar to the author
+        that the user provided 
+        """
+        print("This is the value passed to find_similar_author" + author)
+        author = author.replace("."," ")
+        similar_author_list = []
+        author_id = self.find_author_id(author)
+        url = self.endpoint + "author/similar/" + author_id + "." + author
+        results = requests.get(url)
+        soup = BeautifulSoup(results.content, 'html.parser')
+
+        for authors in soup.find_all('div', class_='readable'):
+            author_name = authors.find('a', 'bookTitle').contents[0]
+            similar_author_list.append(author_name)
+        
+        similar_author_list = similar_author_list[1:]  #remove original author
+        print(similar_author_list)
+        return similar_author_list
 
 
 
+    def find_author_id(self, author):
+        """
+        Makes call to Goodreads api to search
+        an author by name and return the author id
+        """
+        params = {
+            "key": self.api_key
+        }
+
+        url = self.endpoint + "api/author_url/" + author
+        results = requests.get(url, params=params)
+        print(results.url)
+        root = ElementTree.fromstring(results.content)
+        author_id  = root[1].attrib['id']
+
+        return author_id
+
+    
     def get_work(self, bookXmlResult):
         """
         Parse XML response for a book and return the 

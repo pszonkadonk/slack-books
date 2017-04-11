@@ -73,7 +73,7 @@ class SlackBook:
             message_input = {"text": message},
             context = self.context)
         
-        print(watson_response['entities'])
+        # print(watson_response['entities'])
         self.context = watson_response["context"]
 
         print(watson_response['context'])
@@ -97,6 +97,11 @@ class SlackBook:
 
         elif 'is_popular' in self.context.keys() and self.context['is_popular'] == 'None':
             response = self.handle_random_best_sellers()
+
+        elif 'similar_authors' in self.context.keys() and self.context['similar_authors']:
+            author = message_context['entities'][0]['disambiguation']['name']
+            print("this is what is being passed to handle_similar_author: " + author) 
+            response = self.handle_similar_authors(author)
 
         # if user has made a numeric selection from the list.  I.E chooses book "4"    
             
@@ -175,7 +180,7 @@ class SlackBook:
 
     def handle_random_best_sellers(self):
         """
-        The user is uncertain what type of book they want Makes a request to the book client
+        The user is uncertain what type of book they want. Makes a request to the book client
         to pull an array of the most popular books from Goodreads and send to context object.  Sends list of
         books to the user
         """ 
@@ -190,8 +195,25 @@ class SlackBook:
             response+=str(i+1) + ". " + book['book_title'] + "by: " + book['author_name'] +"\n"
         response+= "Enter the number of a book if you would like to know more about it"
 
+        return response
+
+    def handle_similar_authors(self, message):
+        """
+        The user is expresses a desire to find an author similar to another author.  This function
+        makes a request to the book client to pull an array of authors similar to the author
+        provided by the user 
+        """ 
+
+        self.context['authors'] = self.book_client.find_similar_author(message)
+
+        response = "The following are authors that I think you will enjoy \n"
+
+        for(i, author) in enumerate(self.context['authors']):
+            response+=str(i+1) + ". " + author + "\n"
+        response+= "Please let me know if there is anything else you would like."
 
         return response
+
 
 
 
