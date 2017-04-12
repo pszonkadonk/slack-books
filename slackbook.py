@@ -60,13 +60,14 @@ class SlackBook:
         if(message.isdigit() == False):
             message_context = self.watson_nlu.analyze(
                 text=message,
-                features = [self.features.Entities(), self.features.Keywords()]
+                features = [self.features.Categories(), self.features.Entities(), self.features.Keywords()]
             )
-            print(json.dumps(message_context, indent=2))
 
-            if len(message_context['entities']) != 0:
-                if message_context['entities'][0]['type'] == 'Person':
-                    target_person =  message_context['entities'][0]['text']
+        print(json.dumps(message_context, indent=2))
+
+        if len(message_context['entities']) != 0:
+            if message_context['entities'][0]['type'] == 'Person':
+                target_person =  message_context['entities'][0]['text']
         
         watson_response = self.watson_conversation.message(
             workspace_id = self.workspace_id,
@@ -100,8 +101,11 @@ class SlackBook:
 
         elif 'similar_authors' in self.context.keys() and self.context['similar_authors']:
             author = message_context['entities'][0]['disambiguation']['name']
-            print("this is what is being passed to handle_similar_author: " + author) 
             response = self.handle_similar_authors(author)
+
+        elif 'similar_books' in self.context.keys() and self.context['similar_books']:
+            book = message_context['entities'][0]['disambiguation']['name']
+            response = self.handle_similar_books
 
         # if user has made a numeric selection from the list.  I.E chooses book "4"    
             
@@ -221,7 +225,17 @@ class SlackBook:
         makes a request to the book client to pull an array of authors similar to the author
         provided by the user 
         """
+
         self.context['relevent_books'] = self.book_client.find_similar_books(message)
+
+        response = "The following are books that I think you will enjoy \n"
+
+        for(i, book) in enumerate(self.context(['relevent_books'])):
+            response+=str(i+1) + ". " + book + "\n"
+        response+="Please let me know if there is anything else you would like."
+
+        return response
+
 
 
     def parse_output(self, slack_rtm_output):

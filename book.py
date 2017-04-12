@@ -143,15 +143,16 @@ class BookClient:
         book_id = self.find_book_id(book)
         url = self.endpoint + "book/similar/" + book_id + "-"+ book
         results = requests.get(url)
+        
 
         soup = BeautifulSoup(results.content, "html.parser")
 
-        for book in soup.find_all('div', class_='u-anchorTarget'):
-            print(book)
+        for book in soup.find_all('a', class_='bookTitle'):
+            book_title = book.find('span').text
+            similar_book_list.append(book_title)
 
 
-
-        return
+        return similar_book_list
 
 
 
