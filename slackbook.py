@@ -24,13 +24,14 @@ class SlackBook:
         Formatting book information that is sent to the user after
         a selection is made
         """
+        print(selected_book)
         response = "Here is some information on that book \n" +\
             "Title: " + selected_book['book_title'] + "\n" +\
             "Author: " + selected_book['author_name'] + "\n" +\
             "Description" + "\n" + \
             book_description + "\n" + \
             'Average Rating: ' + selected_book['average_rating'] + "\n" +\
-            "Review Count: " + selected_book['review_count'] + "\n" + \
+            "Review Count: " + selected_book['review_count'] + "\n" +\
             "Would you like to revisit the list?"
 
         return response
@@ -42,7 +43,7 @@ class SlackBook:
         that the user chose in the selection menu.  Calls format_book_info 
         for formatting
         """
-        print("handle_selection_message called")
+        # print("handle_selection_message called")
         selected_book = self.context['books'][selection-1]
         book_description = self.book_client.get_book_info_by_id(selected_book['book_id'])
 
@@ -63,11 +64,11 @@ class SlackBook:
                 features = [self.features.Categories(), self.features.Entities(), self.features.Keywords()]
             )
 
-        print(json.dumps(message_context, indent=2))
+        # print(json.dumps(message_context, indent=2))
 
-        if len(message_context['entities']) != 0:
-            if message_context['entities'][0]['type'] == 'Person':
-                target_person =  message_context['entities'][0]['text']
+            if len(message_context['entities']) != 0:
+                if message_context['entities'][0]['type'] == 'Person':
+                    target_person =  message_context['entities'][0]['text']
         
         watson_response = self.watson_conversation.message(
             workspace_id = self.workspace_id,
@@ -191,7 +192,7 @@ class SlackBook:
         if(self.context['is_popular'] and 'books' not in self.context.keys() or len(self.context['books']) == 0):
             self.context['books'] = self.book_client.find_most_popular()
             
-        print(self.context['books'])
+        # print(self.context['books'])
 
         response = "The following are popular books from 2017 that have great reviews! \n"
 
@@ -271,5 +272,3 @@ class SlackBook:
                 time.sleep(DELAY)
         else:
             print("Could not connect to slack.  Please check slack api token or bot id")
-
-

@@ -143,7 +143,6 @@ class BookClient:
         book_id = self.find_book_id(book)
         url = self.endpoint + "book/similar/" + book_id + "-"+ book
         results = requests.get(url)
-        
 
         soup = BeautifulSoup(results.content, "html.parser")
 
