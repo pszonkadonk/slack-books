@@ -101,7 +101,8 @@ class SlackBook:
             response = self.handle_random_best_sellers()
 
         elif 'similar_authors' in self.context.keys() and self.context['similar_authors']:
-            author = message_context['entities'][0]['disambiguation']['name']
+            author = message_context['entities'][0]['text']
+            # author = message_context['entities'][0]['disambiguation']['name']
             response = self.handle_similar_authors(author)
 
         elif 'similar_books' in self.context.keys() and self.context['similar_books']:
